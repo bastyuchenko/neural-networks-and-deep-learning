@@ -1,6 +1,9 @@
+# %load network.py
+
 """
 network.py
 ~~~~~~~~~~
+IT WORKS
 
 A module to implement the stochastic gradient descent learning
 algorithm for a feedforward neural network.  Gradients are calculated
@@ -53,20 +56,25 @@ class Network(object):
         network will be evaluated against the test data after each
         epoch, and partial progress printed out.  This is useful for
         tracking progress, but slows things down substantially."""
-        if test_data: n_test = len(test_data)
+
+        training_data = list(training_data)
         n = len(training_data)
+
+        if test_data:
+            test_data = list(test_data)
+            n_test = len(test_data)
+
         for j in range(epochs):
-            #random.shuffle(training_data)
+            random.shuffle(training_data)
             mini_batches = [
                 training_data[k:k+mini_batch_size]
                 for k in range(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
-                print("Epoch {0}: {1} at {2}".format(j, self.evaluate(test_data), n_test))
+                print("Epoch {} : {} / {}".format(j,self.evaluate(test_data),n_test));
             else:
-                print("Epoch {0} complete".format(j))
-        return
+                print("Epoch {} complete".format(j))
 
     def update_mini_batch(self, mini_batch, eta):
         """Update the network's weights and biases by applying
@@ -129,8 +137,8 @@ class Network(object):
         return sum(int(x == y) for (x, y) in test_results)
 
     def cost_derivative(self, output_activations, y):
-        """Return the vector of partial derivatives partial C_x /
-        partial a for the output activations."""
+        """Return the vector of partial derivatives \partial C_x /
+        \partial a for the output activations."""
         return (output_activations-y)
 
 #### Miscellaneous functions
