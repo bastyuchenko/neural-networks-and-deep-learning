@@ -6,19 +6,25 @@ import network as network
 import re_network as rnetwork
 
 np.random.seed(123)
-training_dataX=[np.random.rand(2, 1) for _ in range(5)]
-training_dataY=[np.random.rand(3, 1) for _ in range(5)]
+training_dataX=[np.random.rand(2, 1) for _ in range(5000)]
+training_dataY=[np.random.rand(3, 1) for _ in range(5000)]
 
+net = network.Network([2,5,7,3])
+rnet = rnetwork.Network([2,5,7,3])
+rnet.weights = net.weights.copy()
+rnet.biases = net.biases.copy()
 
-net = network.Network([2,4,3])
-net.SGD(list(zip(training_dataX, training_dataY)), 1, 1000, 0.1)
+net.SGD(list(zip(training_dataX, training_dataY)), 5, 100, 0.1)
 print(net.weights)
 print(net.biases)
 print('*********')
 
 np.random.seed(123)
-rnet = rnetwork.Network([2,4,3])
-rnet.SGD(list(zip(training_dataX, training_dataY)), 1, 1000, 0.1)
+training_dataX=[np.random.rand(2, 1) for _ in range(5000)]
+training_dataY=[np.random.rand(3, 1) for _ in range(5000)]
+
+
+rnet.SGD(list(zip(training_dataX, training_dataY)), 5, 100, 0.1)
 print(rnet.weights)
 print(rnet.biases)
 print('*********')
