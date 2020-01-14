@@ -114,44 +114,69 @@ class Network(object):
 
 
 class ConvLayer(object):
-    def __init__(self, inputLayer, filters):
+    def __init__(self, inputLayer, filters, biases):
         self.nextLayerDim = Helper.get_nextLayerDim(
             inputLayer.shape[0], filters[0].shape[0], 0, 1)
 
         self.filters = filters
         self.inputLayer = inputLayer
+        self.biases = biases
 
-    def convolve(self):
+    def run(self):
         output_collection = [signal.convolve(self.inputLayer, filter, mode='valid', method='auto')
-                             for filter in self.filters]
-        return np.stack(output_collection)
+                             for filter in zip(self.filters, self.biases)]
+        self.output = np.stack(output_collection)
+        return self.output
+
 
 class ActivationLayer(object):
-    def __init__(self, inputLayer, activationFunction):
+    def __init__(self, inputLayer, activationLogic):
+        self.inputLayer = inputLayer
+        self.activationLogic = activationLogic
 
-def calculate_cost(training, w, b):
-    return sum([calculate_output(y, x, w, b) for x, y in training])/len(training)
-
-
-def calculate_output(y, x, w, b):
-    a = x
-    for wl, bl in zip(w, b):
-        a = sigmoid(wl@a+bl)
-    return (y-a)**2
+    def run(self):
+        self.output = self.activationLogic.function(self.inputLayer)
+        return self.output
 
 
-def sigmoid(z):
-    return 1.0/(1.0+np.exp(-z))
+class PoolLayer(object):
+    def __init__(self, inputLayer, poolingLogic):
+        self.inputLayer = inputLayer
+        self.poolingLogic = poolingLogic
+
+    def run(self):
+        self.output = self.poolingLogic(self.inputLayer)
+        return self.output
+
+def MaxPooling(z):
+    output_dim = z.shape[0]/2 if z.shape[0]%2==0 else (z.shape[0]+1)/2
+    output = np.zeros((output_dim, output_dim, z.shape[2]))
+    for d in range(z.shape[2]):
+        for i in range(z.shape[0]):
+            for j in range(z.shape[0]):
+                output[i,j,d] = z[i:i+2, j:j+2, d].max()
+    return output
 
 
-def sigmoid_prime(z):
-    return sigmoid(z)*(1-sigmoid(z))
+class ActivationLogicReLU(object):
+    @staticmethod
+    def function(z):
+        return max(0, z)
 
-def relu(x):
-    return max(0, x)
+    @staticmethod
+    def function_prime(z):
+        return 1 if z > 0 else 0
 
-def softplus(x):
-    return math.log(1+exp(x))
+
+class ActivationLogicSoftplus(object):
+    @staticmethod
+    def function(z):
+        return math.log(1+math.exp(z))
+
+    @staticmethod
+    def function_prime(z):
+        return 1/(1+math.exp(-z))
+
 
 class Helper(object):
     @staticmethod
