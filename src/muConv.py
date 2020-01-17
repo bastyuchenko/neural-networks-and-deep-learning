@@ -122,9 +122,16 @@ class ConvLayer(object):
         self.inputLayer = inputLayer
         self.biases = biases
 
+    def convolve2d(self, input3d, filter3d, mode):
+        result = sum([signal.convolve2d(
+            input3d[:, :, iterDeepDim],
+            filter3d[:, :, iterDeepDim], mode)
+            for iterDeepDim in range(3)])
+        return result
+
     def run(self):
-        output_collection = [signal.convolve(self.inputLayer, filter, mode='valid', method='auto')
-                             for filter in zip(self.filters, self.biases)]
+        output_collection = [self.convolve2d(self.inputLayer, f, mode='valid')
+                             for f, b in zip(self.filters, self.biases)]
         self.output = np.stack(output_collection)
         return self.output
 
@@ -148,13 +155,14 @@ class PoolLayer(object):
         self.output = self.poolingLogic(self.inputLayer)
         return self.output
 
+
 def MaxPooling(z):
-    output_dim = z.shape[0]/2 if z.shape[0]%2==0 else (z.shape[0]+1)/2
+    output_dim = z.shape[0]/2 if z.shape[0] % 2 == 0 else (z.shape[0]+1)/2
     output = np.zeros((output_dim, output_dim, z.shape[2]))
     for d in range(z.shape[2]):
         for i in range(z.shape[0]):
             for j in range(z.shape[0]):
-                output[i,j,d] = z[i:i+2, j:j+2, d].max()
+                output[i, j, d] = z[i:i+2, j:j+2, d].max()
     return output
 
 
